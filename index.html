@@ -284,8 +284,11 @@ async function submit(){
   document.querySelectorAll('.q').forEach(q=>{ data[q.dataset.id]= condHidden(q)? '' : getVal(q); });
   attendee=data;
   if(CONFIG.endpoint){
-    try{ await fetch(CONFIG.endpoint,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(data),keepalive:true}); }
-    catch(err){ console.warn('Submit failed',err); }
+    /* إرسال مزدوج بتأخير عشوائي: يوزّع الضغط ويحمي من فقدان طلب؛ الرقم التسلسلي يمنع التكرار في الجدول */
+    const body=JSON.stringify(data);
+    const post=()=>{ try{ fetch(CONFIG.endpoint,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:body,keepalive:true}).catch(()=>{}); }catch(err){ console.warn('Submit failed',err); } };
+    setTimeout(post, Math.random()*1500);
+    setTimeout(post, 15000+Math.random()*10000);
   } else { console.log('TEST MODE — data not sent anywhere:',data); }
   $('formArea').classList.add('hidden'); $('done').classList.remove('hidden');
   window.scrollTo({top:0});
